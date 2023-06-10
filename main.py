@@ -4,12 +4,11 @@
 
 from fastapi import FastAPI
 import uvicorn
-from time import sleep
 from starlette.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from WorkHorse import WorkHorse
-import asyncio
 import datetime
+from database_wrapper import process_records, basic_read
 
 
 app = FastAPI()
@@ -44,13 +43,38 @@ async def get_vector_tiles(z: int, x: int, y: int):
     wh.check_if_tile_numbers_are_valid()
 
     wh.tile_to_envelope()
+
+    sql_query_ = wh.envelope_to_sql()
+
+    # --- --- --- --- --- #
+    # THIS IS VARIANT FOR SYNCHRONOUS QUERY EXECUTION
+
+    # print(f"Before executing SQL query...{z}/{x}/{y}...{datetime.datetime.now()}")
+    # response = Response(bytes(basic_read(
+    #     sql_query=sql_query_
+    # )[0][0]))
+    # print(f"After executing SQL query...{z}/{x}/{y}...{datetime.datetime.now()}")
+    #
+    # return response
+
+    # END OF BLOCK
+    # --- --- --- --- --- #
+
+    # --- --- --- --- --- #
+    # THIS IS VARIANT FOR ASYNCHRONOUS QUERY EXECUTION
+
     print(f"Before executing SQL query...{z}/{x}/{y}...{datetime.datetime.now()}")
-    pbf_data = await wh.sql_to_pbf()
+    pbf_data = await process_records(
+        sql_query=sql_query_
+    )
     print(f"After executing SQL query...{z}/{x}/{y}...{datetime.datetime.now()}")
-    # return Response(bytes(wh.sql_to_pbf()[0][0]))
+
     return Response(
         pbf_data[0]['st_asmvt']
     )
+
+    # END OF BLOCK
+    # --- --- --- --- --- #
 
 
 if __name__ == '__main__':
