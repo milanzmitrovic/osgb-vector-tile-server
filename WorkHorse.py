@@ -124,23 +124,3 @@ class WorkHorse:
 
         return sql_tmpl
 
-    async def sql_to_pbf(self):
-        """
-
-        Purpose of this function is to run SQL query
-        that was created in previous step.
-
-        :return:
-        """
-
-        sql_query_ = self.envelope_to_sql()
-
-        # return basic_read(
-        #     sql_query=sql_query_
-        # )
-
-        return await process_records(
-            sql_query=sql_query_
-        )
-
-
